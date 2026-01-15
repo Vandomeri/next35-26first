@@ -8,6 +8,7 @@ const lavishy = Lavishly_Yours({
   weight: ["400"]
 })
 
+
 const roboto = Roboto({
   weight: ["400", "200", "700", "900"]
 })
@@ -16,7 +17,7 @@ export default function RootLayout({ children }) {
 
 
   return (
-    <html lang="en" className={lavishy.className}>
+    <html lang="en">
       <body>
         <header>
           <div>LOGO</div>
