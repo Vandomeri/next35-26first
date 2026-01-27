@@ -1,36 +1,17 @@
+
 import { prisma } from "@/lib/prisma"
+import UsersTable from "./UsersTable"
 
 export default async function UsersPage() {
 
-    const data = await prisma.user.findMany({
-        where: {
-            AND: [
-                {
-                    email: 's@s.s'
-                },
-                {
-                    age: 17
-                }
-            ]
-        }
-    })
+    const data = await prisma.user.findMany()
 
-    // SELECT * FROM `users` WHERE `age` = 17
+    console.log(data)
 
     return (
         <div>
             <h1>Users List</h1>
-            <div className="grid grid-cols-4">
-                {
-                    data.map(user => (
-                        <div key={user.id}>
-                            <p>{user.username}</p>
-                            <p>{user.email}</p>
-                            <p>{user.age} лет</p>
-                        </div>
-                    ))
-                }
-            </div>
+            <UsersTable data={data} />
 
 
         </div>
