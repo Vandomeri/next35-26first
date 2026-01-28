@@ -4,57 +4,78 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "./prisma"
 import { writeFile } from "node:fs/promises"
 import { join } from "node:path"
+import z from "zod"
+import { message } from "antd"
 
-export async function createUser(formData) {
+export async function createUser(initialState, formData) {
+
+    console.log(initialState)
+
+    // const files = formData.getAll('image')
+
+    // const imagesNames = []
+
+    // const allowedType = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
+
+    // console.log(files)
+    // for (const img of files) {
+
+    //     if (img.size > 1_000_000) {
+    //         break;
+    //     }
+
+    //     if (!allowedType.includes(img.type)) {
+    //         console.log('Ошибка')
+    //         break;
+    //     }
+
+    //     const buffer = Buffer.from(await img.arrayBuffer())
+
+    //     const imageName = Date.now() + img.name.replaceAll(' ', '_')
+
+    //     await writeFile(
+    //         join('public', 'photos', imageName),
+    //         buffer
+    //     )
+
+    //     imagesNames.push({ url: `/photos/${imageName}` })
+    // }
 
 
-    const files = formData.getAll('image')
+    const schema = z.object({
+        age: z.number().min(0).max(120),
+        email: z.email(),
+        password: z.string().min(8).max(20),
+        username: z.string().min(4).max(25)
+    })
 
-    const imagesNames = []
 
-    const allowedType = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
+    const validationFields = schema.safeParse({
+        age: Number(formData.get('age')),
+        email: formData.get('email'),
+        password: formData.get('password'),
+        username: formData.get('username'),
+    })
 
-    console.log(files)
-    for (const img of files) {
+    if (validationFields.success) {
+        const user = await prisma.user.create({
+            data: validationFields.data
+        })
 
-        if (img.size > 1_000_000) {
-            break;
+        // revalidatePath('/users')
+
+        return {
+            message: 'Успешно добавлен пользователь'
         }
 
-        if (!allowedType.includes(img.type)) {
-            console.log('Ошибка')
-            break;
+    } else {
+        console.log(validationFields.error.issues)
+        return {
+            error: validationFields.error.issues
         }
-
-        const buffer = Buffer.from(await img.arrayBuffer())
-
-        const imageName = Date.now() + img.name.replaceAll(' ', '_')
-
-        await writeFile(
-            join('public', 'photos', imageName),
-            buffer
-        )
-
-        imagesNames.push({ url: `/photos/${imageName}` })
     }
 
 
-
-    const user = await prisma.user.create({
-        data: {
-            age: Number(formData.get('age')),
-            email: formData.get('email'),
-            password: formData.get('password'),
-            username: formData.get('username'),
-            photos: {
-                createMany: {
-                    data: imagesNames
-                }
-            }
-        }
-    })
-
-    revalidatePath('/users')
 
 }
 

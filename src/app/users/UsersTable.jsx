@@ -1,8 +1,8 @@
 'use client'
 
 import { createUser, deleteUser, updateUser } from "@/lib/serverActions";
-import { Button, Modal, Table } from "antd";
-import { useState } from "react";
+import { Button, message, Modal, Table } from "antd";
+import { useActionState, useState } from "react";
 
 export default function UsersTable({ data }) {
 
@@ -79,17 +79,26 @@ export default function UsersTable({ data }) {
         setIsModalOpen(false);
     };
 
+
+    const initialState = {
+        message: ''
+    }
+
+    const [state, formAction, pending] = useActionState(createUser, initialState)
+
     return (
         <div>
 
-            <form action={createUser} className="mb-10 ">
-                <input name="email" type="text" placeholder="Email" />
-                <input name="username" type="text" placeholder="Username" />
-                <input name="age" type="text" placeholder="Age" />
-                <input name="password" type="text" placeholder="Password" />
+            <form action={formAction} className="mb-10 ">
+                <input required name="email" type="email" placeholder="Email" />
+                <input required name="username" type="text" placeholder="Username" />
+                <input required name="age" type="number" placeholder="Age" />
+                <input required name="password" type="number" placeholder="Password" />
 
-                <input name="image" type="file" multiple />
-                <Button htmlType="submit" variant="solid" color="magenta">Создать пользователя</Button>
+                {/* <input name="image" type="file" multiple /> */}
+                <Button loading={pending} htmlType="submit" variant="solid" color="magenta">Создать пользователя</Button>
+
+                <p>{state?.message}</p>
             </form>
 
             <Table
